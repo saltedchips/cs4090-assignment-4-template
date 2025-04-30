@@ -39,6 +39,7 @@ def main():
 
     if st.sidebar.button("Test: pytest-cov"):
         os.system("PYTHONPATH=.. pytest ../tests/test_basic.py --cov=src.tasks --cov-report=term > ../tests/results/test_output.txt")
+        os.makedirs("../tests/results", exist_ok=True)
         with open("../tests/results/test_output.txt") as f:
             st.sidebar.text(f.read())
 
