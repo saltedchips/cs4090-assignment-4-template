@@ -33,30 +33,39 @@ def main():
     
     # Load existing tasks
     tasks = load_tasks()
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    results_dir = os.path.join(base_dir, "..", "tests", "results")
+    os.makedirs(results_dir, exist_ok=True)
 
     #Run test button
     st.sidebar.markdown("Run Unit Tests")
 
     if st.sidebar.button("Test: pytest-cov"):
-        os.system("PYTHONPATH=.. pytest ../tests/test_basic.py --cov=src.tasks --cov-report=term > ../tests/results/test_output.txt")
-        os.makedirs("../tests/results", exist_ok=True)
+        test_file_path = os.path.join(base_dir, "..", "tests", "test_basic.py")
+        output_file = os.path.join(results_dir, "test_output.txt")
+        os.system(f"PYTHONPATH=.. pytest {test_file_path} --cov=src.tasks --cov-report=term > {output_file}")
         with open("../tests/results/test_output.txt") as f:
             st.sidebar.text(f.read())
 
     if st.sidebar.button("Test: HTML Report"):
-        os.system("PYTHONPATH=.. pytest ../tests/test_basic.py --cov=src.tasks --cov-report=html:../tests/results/html")
+        out_dest = os.path.join(results_dir, "/html")
+        test_file_path = os.path.join(base_dir, "..", "tests", "test_basic.py")
+        os.system(f"PYTHONPATH=.. pytest {test_file_path} --cov=src.tasks --cov-report=html:{out_dest}")
         st.success("Tests completed! Check the HTML report in '/tests/results/html/index.html'.")
 
     if st.sidebar.button("Test: Parametrize"):
-        os.system("PYTHONPATH=.. pytest ../tests/test_advanced.py -k 'parametrize' --maxfail=1 --disable-warnings -q")
+        test_file_path = os.path.join(base_dir, "..", "tests", "test_advanced.py")
+        os.system(f"PYTHONPATH=.. pytest {test_file_path} -k 'parametrize' --maxfail=1 --disable-warnings -q")
         st.success("Tests completed with parameterized inputs!")
 
     if st.sidebar.button("Test: Mocking"):
-        os.system("PYTHONPATH=.. pytest ../tests/test_advanced.py -k 'mock' --maxfail=1 --disable-warnings -q")
+        test_file_path = os.path.join(base_dir, "..", "tests", "test_advanced.py")
+        os.system(f"PYTHONPATH=.. pytest {test_file_path} -k 'mock' --maxfail=1 --disable-warnings -q")
         st.success("Mocking tests completed!")
 
     if st.sidebar.button("Test: TDD"):
-        os.system("PYTHONPATH=.. pytest ../tests/test_tdd.py --maxfail=1 --disable-warnings -q")
+        test_file_path = os.path.join(base_dir, "..", "tests", "test_tdd.py")
+        os.system(f"PYTHONPATH=.. pytest {test_file_path} --maxfail=1 --disable-warnings -q")
         st.success("TDD tests completed!")
 
 
@@ -70,8 +79,9 @@ def main():
 
     if st.sidebar.button("Run Property-Based Tests"):
         st.write("Running property-based tests with Hypothesis...")
+        test_file_path = os.path.join(base_dir, "..", "tests", "test_property.py")
         result = result = subprocess.run(
-            ["pytest", "../tests/test_property.py", "--maxfail=1", "--disable-warnings", "-q", "--tb=short"],
+            ["pytest", test_file_path, "--maxfail=1", "--disable-warnings", "-q", "--tb=short"],
             capture_output=True,
             text=True,
             env={**os.environ, "PYTHONPATH": ".."}
