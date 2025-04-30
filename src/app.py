@@ -1,17 +1,43 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-from tasks import load_tasks, save_tasks, filter_tasks_by_priority, filter_tasks_by_category
+from tasks import *
+import os
+
+DEFAULT_BACKUP_FILE = "backup.json"
 
 def main():
     st.title("To-Do Application")
     
     # Load existing tasks
     tasks = load_tasks()
-    
+
+    #Run test button
+    st.sidebar.markdown("Run Tests")
+
+    if st.sidebar.button("Run Unit Tests"):
+        st.sidebar.write("Running unit tests...")
+        os.system("PYTHONPATH=.. pytest ../tests/test_basic.py --cov=src.tasks --cov-report=term > ../tests/test_output.txt")
+        with open("../tests/test_output.txt") as f:
+            st.sidebar.text(f.read())
+
+    #Save and load backup
+    st.sidebar.markdown("Save/Load Backup")
+    if st.sidebar.button("Save Backup"):
+        st.sidebar.write("Saving...")
+        save_tasks(tasks, DEFAULT_BACKUP_FILE)
+
+    if st.sidebar.button("Load Backup"):
+        st.sidebar.write("Loading...")
+        tasks = load_tasks(DEFAULT_BACKUP_FILE)
+
+    if st.sidebar.button("Overwrite Tasks With Backup"):
+        st.sidebar.write("Loading...")
+        save_tasks(load_tasks(DEFAULT_BACKUP_FILE))
+
     # Sidebar for adding new tasks
     st.sidebar.header("Add New Task")
-    
+
     # Task creation form
     with st.sidebar.form("new_task_form"):
         task_title = st.text_input("Task Title")
@@ -23,7 +49,7 @@ def main():
         
         if submit_button and task_title:
             new_task = {
-                "id": len(tasks) + 1,
+                "id": generate_unique_id(tasks),
                 "title": task_title,
                 "description": task_description,
                 "priority": task_priority,

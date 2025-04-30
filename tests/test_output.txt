@@ -1,0 +1,17 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.3, pytest-8.3.5, pluggy-1.5.0
+rootdir: /home/mtd/Desktop/Homework/CS4090/cs4090-assignment-4-template
+plugins: metadata-3.1.1, bdd-8.1.0, xdist-3.6.1, mock-3.14.0, cov-6.1.1, html-4.1.1
+collected 9 items
+
+../tests/test_basic.py .........                                         [100%]
+
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.13.3-final-0 ________________
+
+Name       Stmts   Miss  Cover
+------------------------------
+tasks.py      32      1    97%
+------------------------------
+TOTAL         32      1    97%
+============================== 9 passed in 0.04s ===============================
