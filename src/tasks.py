@@ -4,6 +4,7 @@ from datetime import datetime
 
 # File path for task storage
 DEFAULT_TASKS_FILE = "tasks.json"
+DEFAULT_BACKUP_FILE = "backup.json"
 
 def load_tasks(file_path=DEFAULT_TASKS_FILE):
     """
@@ -18,12 +19,38 @@ def load_tasks(file_path=DEFAULT_TASKS_FILE):
     try:
         with open(file_path, "r") as f:
             return json.load(f)
+    #Handeling for file not existing
     except FileNotFoundError:
-        return []
+        print(f"Warning: {file_path} found. Checking backup...")
+        #Tries to load backup if FileNotFoundError it creates new empty .json with file_path and new backup.json
+        try:
+            with open(DEFAULT_BACKUP_FILE, "r") as f:
+                return json.load(f)
+        except FileNotFoundError:
+            print("Backup not found creating new tasks.json and backup.json...")
+            with open(file_path, "w") as file:
+                file.write("[]")
+            with open(DEFAULT_BACKUP_FILE, "w") as file:
+                file.write("[]")
+        with open(file_path, "r") as f:
+            return json.load(f)
+    #Handle invalid json
     except json.JSONDecodeError:
         # Handle corrupted JSON file
-        print(f"Warning: {file_path} contains invalid JSON. Creating new tasks list.")
-        return []
+        print(f"Warning: {file_path} contains invalid JSON. Defaulting to backup.")
+
+        # Tries to load backup if FileNotFoundError it creates new .json with file_path and new backup.json
+        try:
+            with open(DEFAULT_BACKUP_FILE, "r") as f:
+                return json.load(f)
+        except FileNotFoundError:
+            print("Backup not found creating new tasks.json and backup.json...")
+            with open(file_path, "w") as file:
+                file.write("[]")
+            with open(DEFAULT_BACKUP_FILE, "w") as file:
+                file.write("[]")
+            with open(file_path, "r") as f:
+                return json.load(f)
 
 def save_tasks(tasks, file_path=DEFAULT_TASKS_FILE):
     """
