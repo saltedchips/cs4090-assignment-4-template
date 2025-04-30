@@ -3,8 +3,30 @@ import pandas as pd
 from datetime import datetime
 from tasks import *
 import os
+import subprocess
 
 DEFAULT_BACKUP_FILE = "backup.json"
+
+def render_task(task, tasks):
+    col1, col2 = st.columns([4, 1])
+    with col1:
+        if task["completed"]:
+            st.markdown(f"~~**{task['title']}**~~")
+        else:
+            st.markdown(f"**{task['title']}**")
+        st.write(task["description"])
+        st.caption(f"Due: {task['due_date']} | Priority: {task['priority']} | Category: {task['category']}")
+    with col2:
+        if st.button("Complete" if not task["completed"] else "Undo", key=f"complete_{task['id']}"):
+            for t in tasks:
+                if t["id"] == task["id"]:
+                    t["completed"] = not t["completed"]
+                    save_tasks(tasks)
+                    st.rerun()
+        if st.button("Delete", key=f"delete_{task['id']}"):
+            tasks = [t for t in tasks if t["id"] != task["id"]]
+            save_tasks(tasks)
+            st.rerun()
 
 def main():
     st.title("To-Do Application")
@@ -12,16 +34,54 @@ def main():
     # Load existing tasks
     tasks = load_tasks()
 
-
-
     #Run test button
-    st.sidebar.markdown("Run Tests")
+    st.sidebar.markdown("Run Unit Tests")
 
-    if st.sidebar.button("Run Unit Tests"):
-        st.sidebar.write("Running unit tests...")
-        os.system("PYTHONPATH=.. pytest ../tests/test_basic.py --cov=src.tasks --cov-report=term > ../tests/test_output.txt")
-        with open("../tests/test_output.txt") as f:
+    if st.sidebar.button("Test: pytest-cov"):
+        os.system("PYTHONPATH=.. pytest ../tests/test_basic.py --cov=src.tasks --cov-report=term > ../tests/results/test_output.txt")
+        with open("../tests/results/test_output.txt") as f:
             st.sidebar.text(f.read())
+
+    if st.sidebar.button("Test: HTML Report"):
+        os.system("PYTHONPATH=.. pytest ../tests/test_basic.py --cov=src.tasks --cov-report=html:../tests/results/html")
+        st.success("Tests completed! Check the HTML report in '/tests/results/html/index.html'.")
+
+    if st.sidebar.button("Test: Parametrize"):
+        os.system("PYTHONPATH=.. pytest ../tests/test_advanced.py -k 'parametrize' --maxfail=1 --disable-warnings -q")
+        st.success("Tests completed with parameterized inputs!")
+
+    if st.sidebar.button("Test: Mocking"):
+        os.system("PYTHONPATH=.. pytest ../tests/test_advanced.py -k 'mock' --maxfail=1 --disable-warnings -q")
+        st.success("Mocking tests completed!")
+
+    if st.sidebar.button("Test: TDD"):
+        os.system("PYTHONPATH=.. pytest ../tests/test_tdd.py --maxfail=1 --disable-warnings -q")
+        st.success("TDD tests completed!")
+
+
+    if st.sidebar.button("Test: BDD"):
+        directory = '../tests/feature/steps/'
+        for filename in os.listdir(directory):
+            if filename.endswith('.py'):
+                full_path = os.path.join(directory, filename)
+                subprocess.call(f'PYTHONPATH=.. pytest --maxfail=1 --disable-warnings -q {full_path}', shell=True)
+        st.success("BDD tests completed!")
+
+    if st.sidebar.button("Run Property-Based Tests"):
+        st.write("Running property-based tests with Hypothesis...")
+        result = result = subprocess.run(
+            ["pytest", "../tests/test_property.py", "--maxfail=1", "--disable-warnings", "-q", "--tb=short"],
+            capture_output=True,
+            text=True,
+            env={**os.environ, "PYTHONPATH": ".."}
+        )
+        st.code(result.stdout)
+        if result.returncode == 0:
+            st.success("All property-based tests passed!")
+        else:
+            st.error(result)
+
+
 
     #Save and load backup
     st.sidebar.markdown("Save/Load Backup")
@@ -68,15 +128,21 @@ def main():
     st.header("Your Tasks")
     
     # Filter options
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
     with col1:
         filter_category = st.selectbox("Filter by Category", ["All"] + list(set([task["category"] for task in tasks])))
     with col2:
         filter_priority = st.selectbox("Filter by Priority", ["All", "High", "Medium", "Low"])
+    with col3:
+        if st.button("Sort tasks"):
+            tasks = sort_tasks_by_priority(tasks)
+            save_tasks(tasks)
     
     show_completed = st.checkbox("Show Completed Tasks")
+    show_diffrence = st.checkbox("Show Backup and Current Tasks Diffrence")
     
     # Apply filters
+    o, s = None, None
     filtered_tasks = tasks.copy()
     if filter_category != "All":
         filtered_tasks = filter_tasks_by_category(filtered_tasks, filter_category)
@@ -84,28 +150,20 @@ def main():
         filtered_tasks = filter_tasks_by_priority(filtered_tasks, filter_priority)
     if not show_completed:
         filtered_tasks = [task for task in filtered_tasks if not task["completed"]]
+    if show_diffrence:
+        o, s = compare_backup_to_current()
     
     # Display tasks
-    for task in filtered_tasks:
-        col1, col2 = st.columns([4, 1])
-        with col1:
-            if task["completed"]:
-                st.markdown(f"~~**{task['title']}**~~")
-            else:
-                st.markdown(f"**{task['title']}**")
-            st.write(task["description"])
-            st.caption(f"Due: {task['due_date']} | Priority: {task['priority']} | Category: {task['category']}")
-        with col2:
-            if st.button("Complete" if not task["completed"] else "Undo", key=f"complete_{task['id']}"):
-                for t in tasks:
-                    if t["id"] == task["id"]:
-                        t["completed"] = not t["completed"]
-                        save_tasks(tasks)
-                        st.rerun()
-            if st.button("Delete", key=f"delete_{task['id']}"):
-                tasks = [t for t in tasks if t["id"] != task["id"]]
-                save_tasks(tasks)
-                st.rerun()
+    if o is not None and s is not None:
+        st.header("Tasks only in Current Tasks")
+        for task in o:
+            render_task(task, tasks)
+        st.header("Tasks only in Backup Tasks")
+        for task in s:
+            render_task(task, tasks)
+    else:
+        for task in filtered_tasks:
+            render_task(task, tasks)
 
 if __name__ == "__main__":
     main()
