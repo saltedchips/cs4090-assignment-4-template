@@ -6,7 +6,7 @@ import sys
 import os
 import subprocess
 
-DEFAULT_BACKUP_FILE = "backup.json"
+DEFAULT_BACKUP_FILE = "src/backup.json"
 
 def render_task(task, tasks):
     col1, col2 = st.columns([4, 1])

@@ -3,8 +3,8 @@ import os
 from datetime import datetime
 
 # File path for task storage
-DEFAULT_TASKS_FILE = "tasks.json"
-DEFAULT_BACKUP_FILE = "backup.json"
+DEFAULT_TASKS_FILE = "src/tasks.json"
+DEFAULT_BACKUP_FILE = "src/backup.json"
 
 
 def load_tasks(file_path=DEFAULT_TASKS_FILE, backup_path=DEFAULT_BACKUP_FILE):

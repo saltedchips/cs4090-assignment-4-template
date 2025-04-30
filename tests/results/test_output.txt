@@ -1,7 +1,7 @@
 ============================= test session starts ==============================
 platform linux -- Python 3.11.12, pytest-8.3.5, pluggy-1.5.0
 rootdir: /workspaces/cs4090-assignment-4-template
-plugins: cov-6.1.1, xdist-3.6.1, bdd-8.1.0, metadata-3.1.1, html-4.1.1, mock-3.14.0
+plugins: cov-6.1.1, xdist-3.6.1, bdd-8.1.0, hypothesis-6.131.9, metadata-3.1.1, html-4.1.1, mock-3.14.0
 collected 16 items
 
 tests/test_basic.py ................                                     [100%]
@@ -14,4 +14,4 @@ Name           Stmts   Miss  Cover
 src/tasks.py      60      0   100%
 ----------------------------------
 TOTAL             60      0   100%
-============================== 16 passed in 0.07s ==============================
+============================== 16 passed in 0.20s ==============================
