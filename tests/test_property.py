@@ -1,6 +1,9 @@
 # test/test_property.py
 
 from hypothesis import given, strategies as st
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from src.tasks import (
     filter_tasks_by_priority, filter_tasks_by_completion, sort_tasks_by_priority,
     search_tasks, get_overdue_tasks, generate_unique_id

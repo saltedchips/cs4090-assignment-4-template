@@ -1,5 +1,8 @@
 import pytest
 from pytest_bdd import scenario, given, when, then
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
 from src.tasks import default_to_backup
 import os
 import json

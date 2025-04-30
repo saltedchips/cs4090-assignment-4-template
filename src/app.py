@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from tasks import *
+import sys
 import os
 import subprocess
 
@@ -44,13 +45,13 @@ def main():
         test_file_path = os.path.join(base_dir, "..", "tests", "test_basic.py")
         output_file = os.path.join(results_dir, "test_output.txt")
         os.system(f"PYTHONPATH=.. pytest {test_file_path} --cov=src.tasks --cov-report=term > {output_file}")
-        with open("../tests/results/test_output.txt") as f:
+        with open(output_file) as f:
             st.sidebar.text(f.read())
 
     if st.sidebar.button("Test: HTML Report"):
-        out_dest = os.path.join(results_dir, "/html")
+        output_file = os.path.join(results_dir, "html")
         test_file_path = os.path.join(base_dir, "..", "tests", "test_basic.py")
-        os.system(f"PYTHONPATH=.. pytest {test_file_path} --cov=src.tasks --cov-report=html:{out_dest}")
+        os.system(f"PYTHONPATH=.. pytest {test_file_path} --cov=src.tasks --cov-report=html:{output_file}")
         st.success("Tests completed! Check the HTML report in '/tests/results/html/index.html'.")
 
     if st.sidebar.button("Test: Parametrize"):
@@ -67,10 +68,11 @@ def main():
         test_file_path = os.path.join(base_dir, "..", "tests", "test_tdd.py")
         os.system(f"PYTHONPATH=.. pytest {test_file_path} --maxfail=1 --disable-warnings -q")
         st.success("TDD tests completed!")
+        
 
 
     if st.sidebar.button("Test: BDD"):
-        directory = '../tests/feature/steps/'
+        directory = os.path.join(base_dir, "..", "tests", "feature", "steps")
         for filename in os.listdir(directory):
             if filename.endswith('.py'):
                 full_path = os.path.join(directory, filename)
@@ -80,7 +82,7 @@ def main():
     if st.sidebar.button("Run Property-Based Tests"):
         st.write("Running property-based tests with Hypothesis...")
         test_file_path = os.path.join(base_dir, "..", "tests", "test_property.py")
-        result = result = subprocess.run(
+        result = subprocess.run(
             ["pytest", test_file_path, "--maxfail=1", "--disable-warnings", "-q", "--tb=short"],
             capture_output=True,
             text=True,
@@ -177,4 +179,5 @@ def main():
             render_task(task, tasks)
 
 if __name__ == "__main__":
+
     main()

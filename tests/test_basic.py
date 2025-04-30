@@ -1,15 +1,13 @@
 import pytest
 
 # test/test_basic.py
+import os
 import json
 import pytest
 from datetime import datetime, timedelta
-import os
-from src.tasks import (
-    load_tasks, save_tasks, generate_unique_id,
-    filter_tasks_by_priority, filter_tasks_by_category,
-    search_tasks, get_overdue_tasks, filter_tasks_by_completion
-)
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from src.tasks import *
 
 @pytest.fixture
 def sample_tasks():
